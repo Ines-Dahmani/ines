@@ -101,9 +101,8 @@ class _DetailsCapteurPageState extends State<DetailsCapteurPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(capteur['nom'] ?? 'Capteur'),
-        backgroundColor: Colors.green,
-      ),
+          title: Text(capteur['nom'] ?? 'Capteur'),
+          backgroundColor: const Color.fromARGB(255, 177, 224, 177)),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : errorMessage.isNotEmpty
@@ -143,7 +142,7 @@ class _DetailsCapteurPageState extends State<DetailsCapteurPage> {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        "Valeur : ${capteur['valeur'] ?? 'N/A'} unités",
+                        "Valeur : ${capteur['valeur']}",
                         style: const TextStyle(fontSize: 18),
                       ),
                       const SizedBox(height: 10),

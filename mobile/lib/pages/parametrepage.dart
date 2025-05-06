@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/screens/signin.dart';
+import 'package:mobile/screens/ConnexionPage.dart';
+
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class ParametrePage extends StatefulWidget {
   const ParametrePage({Key? key}) : super(key: key);
@@ -11,11 +13,17 @@ class ParametrePage extends StatefulWidget {
 
 class _ParametrePageState extends State<ParametrePage> {
   bool _notificationsEnabled = true;
+  late final WebViewController _controller;
 
   @override
   void initState() {
     super.initState();
     _loadPreferences();
+
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..loadRequest(Uri.parse(
+          'https://www.youtube.com/embed/KVH3Jdc4Gls?autoplay=1&mute=1'));
   }
 
   Future<void> _loadPreferences() async {
@@ -36,14 +44,10 @@ class _ParametrePageState extends State<ParametrePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.green,
-      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
           children: [
-            // Notifications
             ListTile(
               title: const Text('Notifications'),
               subtitle: const Text('Activer ou désactiver les notifications'),
@@ -53,35 +57,13 @@ class _ParametrePageState extends State<ParametrePage> {
               ),
             ),
             const Divider(),
-
-            ListTile(
-              title: const Text('Configuration MQTT'),
-              subtitle: const Text('Gérer votre configuration'),
-              onTap: () {
-                // À implémenter
-              },
+            Card(
+              elevation: 5,
+              child: SizedBox(
+                height: 300, // hauteur fixe
+                child: WebViewWidget(controller: _controller),
+              ),
             ),
-            const Divider(),
-
-            ListTile(
-              title: const Text('Compte'),
-              subtitle: const Text('Gérer votre compte et vos informations'),
-              onTap: () {
-                // À implémenter
-              },
-            ),
-            const Divider(),
-
-            ListTile(
-              title: const Text('Sécurité et autorisation'),
-              subtitle: const Text(
-                  'Gérer les autorisations et la sécurité de votre compte'),
-              onTap: () {
-                // À implémenter
-              },
-            ),
-            const Divider(),
-
             ListTile(
               title: const Text('Déconnexion'),
               subtitle: const Text('Se déconnecter de l\'application'),
@@ -106,7 +88,7 @@ class _ParametrePageState extends State<ParametrePage> {
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) => const Signin()),
+                                  builder: (context) => const ConnexionPage()),
                             );
                           },
                           child: const Text('Déconnexion'),

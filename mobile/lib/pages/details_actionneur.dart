@@ -99,9 +99,8 @@ class _DetailsActionneurPageState extends State<DetailsActionneurPage> {
     if (isLoading) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Détails de l\'Actionneur'),
-          backgroundColor: Colors.green,
-        ),
+            title: const Text('Détails de l\'Actionneur'),
+            backgroundColor: const Color.fromARGB(255, 177, 224, 177)),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -120,9 +119,8 @@ class _DetailsActionneurPageState extends State<DetailsActionneurPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(actionneur['nom'] ?? 'Actionneur'),
-        backgroundColor: Colors.green,
-      ),
+          title: Text(actionneur['nom'] ?? 'Actionneur'),
+          backgroundColor: const Color.fromARGB(255, 177, 224, 177)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: ListView(
@@ -153,7 +151,7 @@ class _DetailsActionneurPageState extends State<DetailsActionneurPage> {
             ),
             const SizedBox(height: 10),
             Text(
-              "Valeur : ${actionneur['valeur'] ?? 'N/A'} unités",
+              "Valeur : ${actionneur['valeur']}",
               style: const TextStyle(fontSize: 18),
             ),
             const SizedBox(height: 10),

@@ -4,6 +4,7 @@ import 'package:mobile/services/api_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 
 class CapteurPage extends StatefulWidget {
   const CapteurPage({Key? key}) : super(key: key);
@@ -229,17 +230,21 @@ class CapteurPageState extends State<CapteurPage> {
                       }
 
                       try {
-                        var formData = FormData.fromMap({
-                          'nom': nameController.text,
-                          'type': selectedType,
-                          'serre': serreId,
-                          'image': await MultipartFile.fromFile(
+                        FormData formData = FormData.fromMap({
+                          "nom": nameController.text,
+                          "type": selectedType,
+                          "valeur": 0,
+                          "status": false,
+                          "serreId": serreId,
+                          "image": await MultipartFile.fromFile(
                             selectedImagePath!,
                             filename: 'capteur.jpg',
+                            contentType: MediaType('image', 'jpeg'),
                           ),
                         });
 
-                        await ApiService.postRequest("capteurs", formData);
+                        print(formData.files);
+                        await ApiService.postRequestImage("capteurs", formData);
 
                         if (context.mounted) Navigator.pop(context);
                         fetchCapteurs();
@@ -346,8 +351,9 @@ class CapteurPageState extends State<CapteurPage> {
                         ),
                       );
                     },
-                    style:
-                        ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            const Color.fromARGB(255, 177, 224, 177)),
                     child: const Text(
                       'Détails',
                       style: TextStyle(color: Colors.white),

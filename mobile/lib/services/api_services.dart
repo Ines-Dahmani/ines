@@ -5,8 +5,8 @@ import 'package:dio/dio.dart';
 // Base URL de ton backend (à remplacer par l'URL réelle de ton serveur).
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.1.114:3000/api';
-  static const String baseUrlImg = 'http://192.168.1.114:3000/';
+  static const String baseUrl = 'http://192.168.1.52:3000/api';
+  static const String baseUrlImg = 'http://192.168.1.52:3000/';
 
   // Fonction pour récupérer le token (à implémenter selon ton stockage)
   static Future<String?> _getToken() async {
@@ -62,33 +62,32 @@ class ApiService {
     }
   }
 
-  // Méthode générique pour gérer les requêtes POST.
-
   static Future<dynamic> postRequestImage(
       String endpoint, FormData data) async {
     try {
       String? token = await _getToken();
 
       Dio dio = Dio();
-      dio.options.headers = {
-        if (token != null) 'Authorization': 'Bearer $token',
-      };
-
       final response = await dio.post(
         '$baseUrl/$endpoint',
         data: data,
+        options: Options(
+          headers: {
+            if (token != null) 'Authorization': 'Bearer $token',
+            'Content-Type': 'multipart/form-data',
+          },
+        ),
       );
 
       return response.data;
     } catch (e) {
-      print("Exception POST image : $e");
+      print("❌ Exception POST avec Dio : $e");
       rethrow;
     }
   }
 
   // Méthode générique pour gérer les requêtes PUT.
-  static Future<dynamic> putRequest(
-      String endpoint, Map<String, dynamic> data) async {
+  static Future<dynamic> putRequest(String endpoint, data) async {
     try {
       String? token = await _getToken();
 
@@ -112,6 +111,7 @@ class ApiService {
     }
   }
 
+//
   // Méthode générique pour gérer les requêtes DELETE.
   static Future<dynamic> deleteRequest(String endpoint) async {
     try {

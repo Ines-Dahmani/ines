@@ -7,6 +7,7 @@ import 'package:mobile/services/api_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:http_parser/http_parser.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -16,7 +17,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  String selectedSerre = 'Serre';
   String? imagePath;
   String? role;
   String? serreId;
@@ -78,7 +78,54 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildWeatherInfo(),
+            const Text(
+              'Capteur Air',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            Wrap(
+              spacing: 10.0,
+              runSpacing: 10.0,
+              children: [
+                SizedBox(
+                  width: (MediaQuery.of(context).size.width - 48) / 2,
+                  child: _buildWeatherItem("🌡️", "25° C", "Température"),
+                ),
+                SizedBox(
+                  width: (MediaQuery.of(context).size.width - 48) / 2,
+                  child: _buildWeatherItem("💧", "60%", "Humidité"),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: const Text(
+                    'Capteur Sol',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                SizedBox(
+                  width: (MediaQuery.of(context).size.width - 48) / 2,
+                  child: _buildWeatherItem("🌡️", "25° C", "Température"),
+                ),
+                SizedBox(
+                  width: (MediaQuery.of(context).size.width - 48) / 2,
+                  child: _buildWeatherItem("💧", "60%", "Humidité"),
+                ),
+                SizedBox(
+                  width: double.infinity,
+                  child: const Text(
+                    'Autre donne de serre',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                SizedBox(
+                  width: (MediaQuery.of(context).size.width - 48) / 2,
+                  child: _buildWeatherItem("🫁", "450ppm", "CO₂"),
+                ),
+                SizedBox(
+                  width: (MediaQuery.of(context).size.width - 48) / 2,
+                  child: _buildWeatherItem("💨", "1200 lux", "Luminosité"),
+                ),
+              ],
+            ),
             const SizedBox(height: 24),
             const Text(
               'Historique',
@@ -131,16 +178,17 @@ class _HomePageState extends State<HomePage> {
               value: '40%',
               color: Colors.orange,
             ),
+            const SizedBox(height: 75),
           ],
         ),
       ),
       floatingActionButton: (role == 'admin')
           ? FloatingActionButton(
               onPressed: () => _showCreateSerreForm(context),
-              child: const Icon(Icons.add),
+              child: const Icon(Icons.add_box_rounded),
             )
           : null,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 
@@ -305,19 +353,24 @@ class _HomePageState extends State<HomePage> {
                       }
 
                       try {
-                        var formData = FormData.fromMap({
-                          "serreId": serreId,
+                        FormData formData = FormData.fromMap({
                           'nom': nomController.text,
                           'taille': tailleController.text,
                           'localisation': localisationController.text,
                           'image': await MultipartFile.fromFile(
                             localImagePath!,
                             filename: 'image.jpg',
+                            contentType: MediaType('image', 'jpeg'),
                           ),
                         });
 
                         var res = await ApiService.postRequestImage(
                             'serres', formData);
+
+                        // Actualiser la liste des serres après création (par exemple, si tu as une méthode pour la récupérer)
+                        setState(() {
+                          // Recharger ou ajouter la nouvelle serre à ta liste locale de serres ici si nécessaire
+                        });
 
                         Navigator.pop(context);
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -375,16 +428,29 @@ class AlertCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: color.withOpacity(0.1),
+      color: color,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(title,
-                style: TextStyle(fontWeight: FontWeight.bold, color: color)),
-            Text(value, style: TextStyle(fontSize: 16, color: color)),
+            Text(
+              title,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+                color: Colors.white,
+              ),
+            ),
+            Text(
+              value,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 25,
+                color: Colors.white,
+              ),
+            ),
           ],
         ),
       ),

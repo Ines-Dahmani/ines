@@ -4,6 +4,7 @@ import 'package:mobile/services/api_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dio/dio.dart';
+import 'package:http_parser/http_parser.dart';
 
 class ActionneurPage extends StatefulWidget {
   const ActionneurPage({Key? key}) : super(key: key);
@@ -64,7 +65,7 @@ class ActionneurPageState extends State<ActionneurPage> {
   void filterActionneurs(String query) {
     setState(() {
       filteredActionneurs = allActionneurs
-          .where((actionneur) => (actionneur['nom']?.toLowerCase() ?? '')
+          .where((actionneur) => (actionneur['name']?.toLowerCase() ?? '')
               .contains(query.toLowerCase()))
           .toList();
     });
@@ -102,7 +103,7 @@ class ActionneurPageState extends State<ActionneurPage> {
                           child: buildActionneurItem(
                             imagePath: actionneur['image'] ?? '',
                             value: actionneur['valeur']?.toString() ?? 'N/A',
-                            label: actionneur['nom'] ?? 'Nom inconnu',
+                            label: actionneur['name'] ?? 'Nom inconnu',
                             status: actionneur['status'],
                             actionneurId: actionneur['_id'] ?? '',
                             actionneurData: actionneur,
@@ -229,17 +230,20 @@ class ActionneurPageState extends State<ActionneurPage> {
                     }
 
                     try {
-                      var formData = FormData.fromMap({
-                        'nom': nameController.text,
+                      FormData formData = FormData.fromMap({
+                        'name': nameController.text,
                         'type': selectedType,
-                        'serre': serreId,
+                        'serreId': serreId,
+                        'status': false,
                         'image': await MultipartFile.fromFile(
                           selectedImagePath!,
                           filename: 'actionneur.jpg',
+                          contentType: MediaType('image', 'jpeg'),
                         ),
                       });
 
-                      await ApiService.postRequest("actionneurs", formData);
+                      await ApiService.postRequestImage(
+                          "actionneurs", formData);
 
                       Navigator.pop(context);
                       fetchActionneurs();
@@ -340,8 +344,9 @@ class ActionneurPageState extends State<ActionneurPage> {
                         ),
                       );
                     },
-                    style:
-                        ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor:
+                            const Color.fromARGB(255, 177, 224, 177)),
                     child: const Text(
                       'Détails',
                       style: const TextStyle(color: Colors.white),

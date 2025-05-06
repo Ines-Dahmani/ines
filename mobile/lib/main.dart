@@ -6,9 +6,10 @@ import 'package:mobile/pages/home.dart';
 import 'package:mobile/pages/capteurPage.dart';
 import 'package:mobile/pages/actionneurPage.dart';
 import 'package:mobile/pages/parametrePage.dart';
+import 'package:mobile/pages/userPage.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: MainPage(),
+      home: const MainPage(),
     );
   }
 }
@@ -37,6 +38,7 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   String? token;
   int _selectedIndex = 0;
+  String selectedSerre = '';
 
   @override
   void initState() {
@@ -44,41 +46,38 @@ class _MainPageState extends State<MainPage> {
     _checkLoginStatus();
   }
 
-  // Liste des pages principales
   final List<Widget> _pages = [
     const HomePage(),
     const CapteurPage(),
     const ActionneurPage(),
+    UserPage(),
     const ParametrePage(),
   ];
 
-  // Titres correspondants à chaque page
   final List<String> _pageTitles = [
     'Accueil',
     'Capteur',
     'Actionneur',
+    'Utilisateurs',
     'Paramètres',
   ];
 
-  // Changement d’onglet
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
 
-  // Vérifie le token dans SharedPreferences
   Future<void> _checkLoginStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       token = prefs.getString('token');
+      selectedSerre = prefs.getString('serreName') ?? '';
     });
   }
 
-  var selectedSerre = '';
   void _showSerreSelectionDialog() async {
     try {
-      // Appelle l'API pour récupérer les serres
       final serres = await ApiService.getRequest('serres');
       if (serres != null && serres is List) {
         showDialog(
@@ -89,27 +88,23 @@ class _MainPageState extends State<MainPage> {
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: serres.map<Widget>((serre) {
-                  final id = serre['_id']; // ou serre['id'] selon ta structure
-                  final name = serre['nom']; // à adapter selon ton modèle
-
+                  final id = serre['_id']?.toString() ?? '';
+                  final name = serre['nom']?.toString() ?? '';
                   return ListTile(
-                    title: Text(name ?? id),
+                    leading: const Icon(Icons.eco, color: Colors.green),
+                    title: Text(name),
                     onTap: () async {
                       SharedPreferences prefs =
                           await SharedPreferences.getInstance();
                       await prefs.setString('serreId', id);
-
-                      setState(() {
-                        selectedSerre = name ?? id;
-                      });
-
+                      await prefs.setString('serreName', name);
                       Navigator.of(context).pop();
-                      Navigator.push(
+                      Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(builder: (context) => MainPage()),
+                        MaterialPageRoute(
+                          builder: (context) => const MainPage(),
+                        ),
                       );
-                      // Optionnel : recharger les capteurs pour cette serre
-                      // await _fetchCapteursBySerreId(id);
                     },
                   );
                 }).toList(),
@@ -143,7 +138,6 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    // Si l’utilisateur n’est pas connecté
     if (token == null) {
       return const LoadingPage();
     }
@@ -153,13 +147,15 @@ class _MainPageState extends State<MainPage> {
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(_pageTitles[_selectedIndex], style: TextStyle(fontSize: 20)),
+            Text(_pageTitles[_selectedIndex],
+                style: const TextStyle(fontSize: 20)),
             ElevatedButton.icon(
-              onPressed: () {
-                _showSerreSelectionDialog();
-              },
+              onPressed: _showSerreSelectionDialog,
               icon: const Icon(Icons.arrow_drop_down),
-              label: Text(selectedSerre, style: const TextStyle(fontSize: 14)),
+              label: Text(
+                selectedSerre.isNotEmpty ? selectedSerre : "Aucune sélection",
+                style: const TextStyle(fontSize: 14),
+              ),
               style: ElevatedButton.styleFrom(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -172,7 +168,7 @@ class _MainPageState extends State<MainPage> {
             ),
           ],
         ),
-        backgroundColor: Colors.green,
+        backgroundColor: const Color.fromARGB(255, 186, 224, 187),
       ),
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
@@ -193,6 +189,10 @@ class _MainPageState extends State<MainPage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.settings_input_antenna),
             label: 'Actionneur',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_add),
+            label: 'Utilisateurs',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),

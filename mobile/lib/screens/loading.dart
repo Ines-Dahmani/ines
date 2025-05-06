@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mobile/screens/signin.dart';
-import 'package:mobile/screens/signup.dart';
+import 'package:mobile/screens/ConnexionPage.dart';
 
 class LoadingPage extends StatelessWidget {
   const LoadingPage({super.key});
@@ -25,27 +24,13 @@ class LoadingPage extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Image de la plante
-                Image.asset(
-                  'assets/plante.jpg',
-                  width: 300,
-                  height: 300,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Icon(
-                      Icons.image_not_supported,
-                      size: 300,
-                      color: Colors.red,
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 50),
+                const SizedBox(height: 35),
 
                 // Logo circulaire
                 Container(
                   margin: const EdgeInsets.only(bottom: 20.0),
-                  width: 70,
-                  height: 70,
+                  width: 150,
+                  height: 150,
                   decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.blue,
@@ -57,7 +42,7 @@ class LoadingPage extends StatelessWidget {
                       errorBuilder: (context, error, stackTrace) {
                         return const Icon(
                           Icons.broken_image,
-                          size: 50,
+                          size: 40,
                           color: Colors.white,
                         );
                       },
@@ -65,7 +50,7 @@ class LoadingPage extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 40),
 
                 // Bouton Sign In
                 ElevatedButton(
@@ -73,35 +58,40 @@ class LoadingPage extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 40, vertical: 15),
                     textStyle: const TextStyle(fontSize: 18),
+                    backgroundColor: const Color.fromARGB(
+                        255, 167, 228, 186), // ✅ correction ici
                   ),
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => const Signin()),
+                      MaterialPageRoute(builder: (_) => const ConnexionPage()),
                     );
                   },
-                  child: const Text('Sign In'),
+                  child: const Text(
+                    'Se connecte',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
 
                 const SizedBox(height: 10),
 
                 // Lien Create Account
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => Signup()),
-                    );
-                  },
-                  child: const Text(
-                    'Create an Account',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ),
+                // TextButton(
+                //   onPressed: () {
+                //     Navigator.push(
+                //       context,
+                //       MaterialPageRoute(builder: (_) => Signup()),
+                //     );
+                //   },
+                //   child: const Text(
+                //     'Create an Account',
+                //     style: TextStyle(
+                //       color: Color.fromARGB(255, 33, 36, 34),
+                //       fontSize: 18,
+                //       decoration: TextDecoration.underline,
+                //     ),
+                //   ),
+                // ),
               ],
             ),
           ),
