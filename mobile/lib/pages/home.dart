@@ -20,11 +20,52 @@ class _HomePageState extends State<HomePage> {
   String? imagePath;
   String? role;
   String? serreId;
+  Map<String, String> weatherData = {
+    "temperature-air": "-",
+    "humidity-air": "-",
+    "temperature-sol": "-",
+    "humidity-sol": "-",
+    "gaz": "-",
+    "luminosity": "-",
+  };
 
   @override
   void initState() {
     super.initState();
     getUserRole();
+    fetchWeatherData().then((_) {
+      setState(() {});
+    });
+  }
+
+  Future<void> fetchWeatherData() async {
+    Future<String> fetchLatest(String topic) async {
+      final response = await ApiService.getRequest(
+        'mqtt/messages/topic/$topic',
+      );
+      print(response);
+      List<dynamic> messages = response;
+      if (messages.isNotEmpty) {
+        return messages.first['message'];
+      }
+      return "-";
+    }
+
+    final temp = await fetchLatest("temperature-air");
+    final hum = await fetchLatest("humidity-air");
+    final tempsol = await fetchLatest("temperature-sol");
+    final humsol = await fetchLatest("humidity-sol");
+    final gaz = await fetchLatest("gaz");
+    final luminosity = await fetchLatest("luminosity");
+
+    weatherData = {
+      "temperature-air": temp,
+      "humidity-air": hum,
+      "temperature-sol": tempsol,
+      "humidity-sol": humsol,
+      "gaz": gaz,
+      "luminosity": luminosity,
+    };
   }
 
   Future<String> getCurrentLocation() async {
@@ -49,10 +90,13 @@ class _HomePageState extends State<HomePage> {
     }
 
     Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high);
+      desiredAccuracy: LocationAccuracy.high,
+    );
 
-    List<Placemark> placemarks =
-        await placemarkFromCoordinates(position.latitude, position.longitude);
+    List<Placemark> placemarks = await placemarkFromCoordinates(
+      position.latitude,
+      position.longitude,
+    );
 
     if (placemarks.isNotEmpty) {
       final placemark = placemarks.first;
@@ -88,41 +132,73 @@ class _HomePageState extends State<HomePage> {
               children: [
                 SizedBox(
                   width: (MediaQuery.of(context).size.width - 48) / 2,
-                  child: _buildWeatherItem("🌡️", "25° C", "Température"),
-                ),
-                SizedBox(
-                  width: (MediaQuery.of(context).size.width - 48) / 2,
-                  child: _buildWeatherItem("💧", "60%", "Humidité"),
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: const Text(
-                    'Capteur Sol',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  child: _buildWeatherItem(
+                    "🌡️",
+                    "${weatherData['temperature-air']} °C",
+                    "Température",
                   ),
                 ),
                 SizedBox(
                   width: (MediaQuery.of(context).size.width - 48) / 2,
-                  child: _buildWeatherItem("🌡️", "25° C", "Température"),
+                  child: _buildWeatherItem(
+                    "💧",
+                    "${weatherData['humidity-air']}%",
+                    "Humidité",
+                  ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Capteur sol',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            Wrap(
+              spacing: 10.0,
+              runSpacing: 10.0,
+              children: [
                 SizedBox(
                   width: (MediaQuery.of(context).size.width - 48) / 2,
-                  child: _buildWeatherItem("💧", "60%", "Humidité"),
-                ),
-                SizedBox(
-                  width: double.infinity,
-                  child: const Text(
-                    'Autre donne de serre',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  child: _buildWeatherItem(
+                    "🌡️",
+                    "${weatherData['temperature-sol']} °C",
+                    "Température",
                   ),
                 ),
                 SizedBox(
                   width: (MediaQuery.of(context).size.width - 48) / 2,
-                  child: _buildWeatherItem("🫁", "450ppm", "CO₂"),
+                  child: _buildWeatherItem(
+                    "💧",
+                    "${weatherData['humidity-sol']}%",
+                    "Humidité",
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Autre données',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            Wrap(
+              spacing: 10.0,
+              runSpacing: 10.0,
+              children: [
+                SizedBox(
+                  width: (MediaQuery.of(context).size.width - 48) / 2,
+                  child: _buildWeatherItem(
+                    "🫁",
+                    "${weatherData['gaz']} ppm",
+                    "CO₂",
+                  ),
                 ),
                 SizedBox(
                   width: (MediaQuery.of(context).size.width - 48) / 2,
-                  child: _buildWeatherItem("💨", "1200 lux", "Luminosité"),
+                  child: _buildWeatherItem(
+                    "💨",
+                    "${weatherData['luminosity']} lux",
+                    "Luminosité",
+                  ),
                 ),
               ],
             ),
@@ -192,33 +268,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildWeatherInfo() {
-    double itemWidth = (MediaQuery.of(context).size.width - 48) / 2;
-
-    return Wrap(
-      spacing: 10.0,
-      runSpacing: 10.0,
-      children: [
-        SizedBox(
-          width: itemWidth,
-          child: _buildWeatherItem("🌡️", "25° C", "Température"),
-        ),
-        SizedBox(
-          width: itemWidth,
-          child: _buildWeatherItem("💧", "60%", "Humidité"),
-        ),
-        SizedBox(
-          width: itemWidth,
-          child: _buildWeatherItem("🫁", "450ppm", "CO₂"),
-        ),
-        SizedBox(
-          width: itemWidth,
-          child: _buildWeatherItem("💨", "1200 lux", "Luminosité"),
-        ),
-      ],
-    );
-  }
-
   Widget _buildWeatherItem(String icon, String value, String label) {
     return Card(
       elevation: 5,
@@ -258,156 +307,168 @@ class _HomePageState extends State<HomePage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return StatefulBuilder(builder: (context, setStateModal) {
-          return Padding(
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-              left: 16,
-              right: 16,
-              top: 20,
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    "Créer une nouvelle serre",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 10),
-                  TextField(
-                    controller: nomController,
-                    decoration: const InputDecoration(labelText: 'Nom'),
-                  ),
-                  TextField(
-                    controller: tailleController,
-                    decoration: const InputDecoration(labelText: 'Taille'),
-                  ),
-                  TextField(
-                    controller: localisationController,
-                    decoration:
-                        const InputDecoration(labelText: 'Localisation'),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.camera_alt),
-                        label: const Text('Caméra'),
-                        onPressed: () async {
-                          final picked = await ImagePicker()
-                              .pickImage(source: ImageSource.camera);
-                          if (picked != null) {
-                            setStateModal(() {
-                              localImagePath = picked.path;
-                            });
-                          }
-                        },
-                      ),
-                      const SizedBox(width: 10),
-                      ElevatedButton.icon(
-                        icon: const Icon(Icons.photo),
-                        label: const Text('Galerie'),
-                        onPressed: () async {
-                          final picked = await ImagePicker()
-                              .pickImage(source: ImageSource.gallery);
-                          if (picked != null) {
-                            setStateModal(() {
-                              localImagePath = picked.path;
-                            });
-                          }
-                        },
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  if (localImagePath != null)
-                    Image.file(
-                      File(localImagePath!),
-                      height: 100,
-                      width: 100,
-                      fit: BoxFit.cover,
-                    ),
-                  const SizedBox(height: 12),
-                  ElevatedButton.icon(
-                    icon: const Icon(Icons.location_on),
-                    label: const Text("Utiliser ma position"),
-                    onPressed: () async {
-                      String location = await getCurrentLocation();
-                      localisationController.text = location;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () async {
-                      if (nomController.text.isEmpty ||
-                          tailleController.text.isEmpty ||
-                          localisationController.text.isEmpty ||
-                          localImagePath == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text("Tous les champs sont requis.")),
-                        );
-                        return;
-                      }
-
-                      try {
-                        FormData formData = FormData.fromMap({
-                          'nom': nomController.text,
-                          'taille': tailleController.text,
-                          'localisation': localisationController.text,
-                          'image': await MultipartFile.fromFile(
-                            localImagePath!,
-                            filename: 'image.jpg',
-                            contentType: MediaType('image', 'jpeg'),
-                          ),
-                        });
-
-                        var res = await ApiService.postRequestImage(
-                            'serres', formData);
-
-                        // Actualiser la liste des serres après création (par exemple, si tu as une méthode pour la récupérer)
-                        setState(() {
-                          // Recharger ou ajouter la nouvelle serre à ta liste locale de serres ici si nécessaire
-                        });
-
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text("Serre créée avec succès.")),
-                        );
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text("Erreur lors de la création.")),
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 145, 189, 146),
-                      foregroundColor: Colors.white,
-                      elevation: 6,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 40, vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                      shadowColor: Colors.grey.withOpacity(0.5),
-                      textStyle: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    child: const Text("Créer"),
-                  ),
-                  const SizedBox(height: 40),
-                ],
+        return StatefulBuilder(
+          builder: (context, setStateModal) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+                left: 16,
+                right: 16,
+                top: 20,
               ),
-            ),
-          );
-        });
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "Créer une nouvelle serre",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: nomController,
+                      decoration: const InputDecoration(labelText: 'Nom'),
+                    ),
+                    TextField(
+                      controller: tailleController,
+                      decoration: const InputDecoration(labelText: 'Taille'),
+                    ),
+                    TextField(
+                      controller: localisationController,
+                      decoration: const InputDecoration(
+                        labelText: 'Localisation',
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.camera_alt),
+                          label: const Text('Caméra'),
+                          onPressed: () async {
+                            final picked = await ImagePicker().pickImage(
+                              source: ImageSource.camera,
+                            );
+                            if (picked != null) {
+                              setStateModal(() {
+                                localImagePath = picked.path;
+                              });
+                            }
+                          },
+                        ),
+                        const SizedBox(width: 10),
+                        ElevatedButton.icon(
+                          icon: const Icon(Icons.photo),
+                          label: const Text('Galerie'),
+                          onPressed: () async {
+                            final picked = await ImagePicker().pickImage(
+                              source: ImageSource.gallery,
+                            );
+                            if (picked != null) {
+                              setStateModal(() {
+                                localImagePath = picked.path;
+                              });
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    if (localImagePath != null)
+                      Image.file(
+                        File(localImagePath!),
+                        height: 100,
+                        width: 100,
+                        fit: BoxFit.cover,
+                      ),
+                    const SizedBox(height: 12),
+                    ElevatedButton.icon(
+                      icon: const Icon(Icons.location_on),
+                      label: const Text("Utiliser ma position"),
+                      onPressed: () async {
+                        String location = await getCurrentLocation();
+                        localisationController.text = location;
+                      },
+                    ),
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (nomController.text.isEmpty ||
+                            tailleController.text.isEmpty ||
+                            localisationController.text.isEmpty ||
+                            localImagePath == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Tous les champs sont requis."),
+                            ),
+                          );
+                          return;
+                        }
+
+                        try {
+                          FormData formData = FormData.fromMap({
+                            'nom': nomController.text,
+                            'taille': tailleController.text,
+                            'localisation': localisationController.text,
+                            'image': await MultipartFile.fromFile(
+                              localImagePath!,
+                              filename: 'image.jpg',
+                              contentType: MediaType('image', 'jpeg'),
+                            ),
+                          });
+
+                          await ApiService.postRequestImage('serres', formData);
+
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Serre créée avec succès."),
+                            ),
+                          );
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Erreur lors de la création."),
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color.fromARGB(
+                          255,
+                          145,
+                          189,
+                          146,
+                        ),
+                        foregroundColor: Colors.white,
+                        elevation: 6,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 40,
+                          vertical: 16,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        shadowColor: Colors.grey.withOpacity(0.5),
+                        textStyle: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                      child: const Text("Créer"),
+                    ),
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
       },
     );
   }

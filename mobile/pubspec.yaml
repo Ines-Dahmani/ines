@@ -21,6 +21,11 @@ version: 1.0.0+1
 environment:
   sdk: ^3.6.2
 
+flutter_icons: # bch nbdelo logo met3na f application f tel 
+  android: true
+  ios: true
+  image_path: "assets/logo.png"
+
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
 # consider running `flutter pub upgrade --major-versions`. Alternatively,
@@ -45,10 +50,10 @@ dependencies:
   flutter_slidable: ^4.0.0
   webview_flutter: ^4.11.0
 
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.14.3 # ← ajoute cette ligne
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

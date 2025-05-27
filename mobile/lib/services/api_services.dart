@@ -5,8 +5,8 @@ import 'package:dio/dio.dart';
 // Base URL de ton backend (à remplacer par l'URL réelle de ton serveur).
 
 class ApiService {
-  static const String baseUrl = 'http://192.168.1.52:3000/api';
-  static const String baseUrlImg = 'http://192.168.1.52:3000/';
+  static const String baseUrl = 'http://192.168.1.20:3000/api';
+  static const String baseUrlImg = 'http://192.168.1.20:3000/';
 
   // Fonction pour récupérer le token (à implémenter selon ton stockage)
   static Future<String?> _getToken() async {
